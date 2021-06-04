@@ -1,8 +1,7 @@
 #step 0. 필요 모듈 라이브러리 로딩, 검색어 입력
 from bs4 import BeautifulSoup
 from selenium import webdriver
-import urllib.request
-import urllib
+import pandas
 import datetime
 import time
 import sys
@@ -10,7 +9,7 @@ import os
 
 query_txt = '엔드게임'##input('1. 크롤링할 키워드는 무엇입니까? : ')
 post_EA = int(100)##(input('2. 크롤링 할 리뷰건수는 몇건입니까?')
-f_dir = 'E:/coding/3years/python/W14'##input("3. 파일을 저장할 위치를 입력하십시오. : ")
+f_dir = 'E:/coding/3years/python/Naver_Movie_Reply_Crawler'##input("3. 파일을 저장할 위치를 입력하십시오. : ")
 
 
 now = time.localtime()
@@ -21,7 +20,7 @@ os.chdir(f_dir)
 f_dir += "" if f_dir[-1:] == "/" else "/"
 os.makedirs(f_dir+s+'-'+query_txt)
 os.chdir(f_dir+s+'-'+query_txt)
-f_result_dir = f_dir+s+'-'+query_txt
+f_result_dir = f_dir+s+'-'+query_txt+"/"+s+'-'+query_txt
 
 try:
   #step 1. 크롬 드라이버 사용, 웹 브라우저 실행
@@ -85,11 +84,11 @@ try:
     driver.quit()
   
   #로딩된 HTML 가져오기
-  time.sleep(2)
+  time.sleep(1)
 
   driver.find_element_by_xpath('//*[@id="content"]/div[1]/div[4]/div[5]/div[2]/a').click()
 
-  time.sleep(2)
+  time.sleep(1)
 
   #iframe내의 HTML을 읽기 위해 전환
   driver.switch_to.frame("pointAfterListIframe")
@@ -101,13 +100,17 @@ try:
 
   #크롤링 시작
   reply = 1
-  index = []
   score = []
   content = []
   author = []
   date = []
   like = []
   dislike = []
+
+  #출력을 텍스트에 기록 시작(print 출력은 콘솔에 보이지 않게됨)
+  dataOutput = sys.stdout
+  txtFile = open(f_result_dir+".txt", 'a', encoding='UTF-8')
+  sys.stdout = txtFile
 
   while True:    
     #로딩된 HTML 가져오기
@@ -116,9 +119,7 @@ try:
     content_list = soup.find('div', class_='ifr_area basic_ifr').find('div', class_='score_result').find('ul').find_all('li')
 
     for i in range(0, len(content_list)):
-      index.append(reply)
-      print('총 %d 건 중 %d 번째 리뷰 데이터를 수집합니다.' % (post_EA, reply), '='*20 )
-      reply += 1
+      print('총 %d 건 중 %d 번째 리뷰 데이터를 수집합니다.' % (post_EA, reply), '='*20)
       
       getScore = content_list[i].find('div', class_='star_score').find('em').get_text().strip()
       print('1.별점 :', getScore)
@@ -145,6 +146,8 @@ try:
       print('6.비공감 :', getDislike)
       dislike.append(getDislike)
 
+      reply += 1
+      
       if reply > post_EA:
         break
 
@@ -153,7 +156,27 @@ try:
     else:
       page += 1
       driver.find_element_by_xpath('//*[@id="pagerTagAnchor' + str(page) + '"]').click()
+      time.sleep(0.5)
 
+  #txt 저장 종료 (print출력이 콘솔에 나타남)
+  sys.stdout = dataOutput
+  txtFile.close()
 
+  dataFrameOutput = pandas.DataFrame()
+  dataFrameOutput['별점(평점)'] = score
+  dataFrameOutput['리뷰내용'] = content
+  dataFrameOutput['작성자'] = author
+  dataFrameOutput['작성일자'] = date
+  dataFrameOutput['공감횟수'] = like
+  dataFrameOutput['비공감횟수'] = dislike
+
+  dataFrameOutput.to_csv(f_result_dir+".csv", encoding='UTF-8', index=True)
+  print("csv 저장 완료")
+  
+  dataFrameOutput.to_excel(f_result_dir+".xls", index=True)
+  print("xls 저장 완료")
+
+  print("정상적으로 처리되었습니다.")
+  
 finally:
   driver.quit()
