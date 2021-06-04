@@ -7,9 +7,9 @@ import time
 import sys
 import os
 
-query_txt = '엔드게임'##input('1. 크롤링할 키워드는 무엇입니까? : ')
-post_EA = int(100)##(input('2. 크롤링 할 리뷰건수는 몇건입니까?')
-f_dir = 'E:/coding/3years/python/Naver_Movie_Reply_Crawler'##input("3. 파일을 저장할 위치를 입력하십시오. : ")
+query_txt = input('1. 크롤링할 키워드는 무엇입니까? : ')
+post_EA = int(input('2. 크롤링 할 리뷰건수는 몇건입니까? : '))
+f_dir = input("3. 파일을 저장할 위치를 입력하십시오. : ")
 
 
 now = time.localtime()
