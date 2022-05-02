@@ -125,7 +125,7 @@ try:
       print('1.별점 :', getScore)
       score.append(getScore)
 
-      getContent = content_list[i].find('div', class_='score_reple').find('p').find('span').get_text().strip()
+      getContent = content_list[i].find('div', class_='score_reple').find('p').find('span', id = "_filtered_ment_" + str(i)).get_text().strip()
       print('2.리뷰내용 :', getContent)
       content.append(getContent)
 
